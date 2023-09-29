@@ -218,6 +218,120 @@ $bootstrap$Balanced_Accuracy
 ```   
 </details>
 
+### Block bootstrap
+
+<details>
+
+Canonical bootstrap was designed to tackle independent observations. In many real life analyses, the independence assumption is not met or excluded per data set design. Time series or repeated measurements in a longitudinal observation clinical study are examples of auch auto-correlated or proband-matched data. A straight forward way to use bootstrap in such cases is to sample __blocks__ instead of observations - a strategy called __block bootstrap__. In case of the longitudinal clinical study, with multiple observations for each participants, the blocks are simply defined by unique participant identifiers. 
+
+The methods `sboot()` and `bmap()` for data frames switch to block bootstrap when a name or a vector of names of variables defining the blocks are provided via the `.by` argument. To check it in practice let's calculate fractions of participants infectted with backeria in a longitudinal study of an antibiotic:
+
+```r
+
+## the variable 'y' codes for bacteria presence, 'trt' stordes the information on the drug treatment
+## and patient's compliance and 'ID' represents the unique participant's identifier.
+## 'ID' will be used as a bloc block-defining variable
+
+my_bacteria <- as_tibble(MASS::bacteria)
+
+> my_bacteria
+# A tibble: 220 × 6
+   y     ap    hilo   week ID    trt    
+   <fct> <fct> <fct> <int> <fct> <fct>  
+ 1 y     p     hi        0 X01   placebo
+ 2 y     p     hi        2 X01   placebo
+ 3 y     p     hi        4 X01   placebo
+ 4 y     p     hi       11 X01   placebo
+ 5 y     a     hi        0 X02   drug+  
+ 6 y     a     hi        2 X02   drug+  
+ 7 n     a     hi        6 X02   drug+  
+ 8 y     a     hi       11 X02   drug+  
+ 9 y     a     lo        0 X03   drug   
+10 y     a     lo        2 X03   drug   
+# … with 210 more rows
+# ℹ Use `print(n = ...)` to see more rows
+
+## a function to compute fraction of observations, where the bacteria were found:
+
+bact_presence <- function(x) table(x[['y']])[2]/sum(table(x[['y']]))
+
+
+## let's compare bootstrapped fractions of participants with bacteria
+## for the classical and block design:
+
+plan('multisession')
+  
+bact_no_block <- my_bacteria %>%
+    split(f = my_bacteria$trt) %>%
+    map(bmap,
+        B = 1000,
+        FUN = bact_presence)
+  
+bact_with_block <- my_bacteria %>%
+    split(f = my_bacteria$trt) %>%
+    map(bmap,
+        B = 1000,
+        FUN = bact_presence, 
+        .by = 'ID')
+
+plan('sequential')
+
+```
+In the comparison of classical and block bootstrap, differences in width of 95% confidence intervals are quite evident:
+
+```r
+
+## classical bootstrap:
+
+>   bact_no_block %>% 
++     map(~.x$bootstrap)
+
+$placebo
+# A tibble: 1 × 7
+  boot_mean boot_sd boot_median boot_lower_iqr boot_upper_iqr boot_lower_ci boot_upper_ci
+      <dbl>   <dbl>       <dbl>          <dbl>          <dbl>         <dbl>         <dbl>
+1     0.876  0.0337       0.875          0.854          0.896         0.812         0.938
+
+$drug
+# A tibble: 1 × 7
+  boot_mean boot_sd boot_median boot_lower_iqr boot_upper_iqr boot_lower_ci boot_upper_ci
+      <dbl>   <dbl>       <dbl>          <dbl>          <dbl>         <dbl>         <dbl>
+1     0.711  0.0594       0.710          0.677          0.758         0.596         0.823
+
+$`drug+`
+# A tibble: 1 × 7
+  boot_mean boot_sd boot_median boot_lower_iqr boot_upper_iqr boot_lower_ci boot_upper_ci
+      <dbl>   <dbl>       <dbl>          <dbl>          <dbl>         <dbl>         <dbl>
+1     0.791  0.0537       0.790          0.758          0.823         0.677         0.887
+
+## block bootstrap
+
+>   bact_with_block %>% 
++     map(~.x$bootstrap)
+
+$placebo
+# A tibble: 1 × 7
+  boot_mean boot_sd boot_median boot_lower_iqr boot_upper_iqr boot_lower_ci boot_upper_ci
+      <dbl>   <dbl>       <dbl>          <dbl>          <dbl>         <dbl>         <dbl>
+1     0.874  0.0440       0.876          0.847          0.906         0.781         0.951
+
+$drug
+# A tibble: 1 × 7
+  boot_mean boot_sd boot_median boot_lower_iqr boot_upper_iqr boot_lower_ci boot_upper_ci
+      <dbl>   <dbl>       <dbl>          <dbl>          <dbl>         <dbl>         <dbl>
+1     0.711  0.0709       0.714          0.661          0.758         0.567         0.839
+
+$`drug+`
+# A tibble: 1 × 7
+  boot_mean boot_sd boot_median boot_lower_iqr boot_upper_iqr boot_lower_ci boot_upper_ci
+      <dbl>   <dbl>       <dbl>          <dbl>          <dbl>         <dbl>         <dbl>
+1     0.792  0.0502       0.794          0.758          0.825         0.692         0.883
+
+```
+
+  
+</details>
+
 ## Terms of use
 
 The package is available under a [GPL-3 license](https://github.com/PiotrTymoszuk/bootStat/blob/main/LICENSE).
