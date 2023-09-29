@@ -1,12 +1,12 @@
 Package: bootStat
 Type: Package
 Title: Bootstrap Interface for Descriptive Statistics
-Version: 0.1.0
+Version: 0.1.1
 Maintainer: Piotr Tymoszuk <piotr.s.tymoszuk@gmail.com>
 Description: The package provides an easy to use functional interface to 
-    compute bootstraped menas, standard deviations, quantiles and 
+    compute bootstraped means, standard deviations, quantiles and 
     confidence intervals for virtually any function computing descriptive 
-    metrics of a numeric vector or a data frame.
+    statistics of a numeric vector or a data frame.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

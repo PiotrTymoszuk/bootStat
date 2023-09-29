@@ -3,6 +3,7 @@
 \name{bmap}
 \alias{bmap}
 \alias{bmap.default}
+\alias{bmap.data.frame}
 \title{Bootstrapped descriptive statistic}
 \usage{
 bmap(x, B, FUN, ...)
@@ -14,6 +15,17 @@ bmap(x, B, FUN, ...)
   ci_method = c("percentile", "bca"),
   summary_function = NULL,
   ...
+)
+
+\method{bmap}{data.frame}(
+  x,
+  B,
+  FUN,
+  ci_method = c("percentile", "bca"),
+  summary_function = NULL,
+  ...,
+  .by = NULL,
+  .drop = TRUE
 )
 }
 \arguments{
@@ -33,6 +45,12 @@ Used by the \code{\link{boot_summary}} function.}
 \item{summary_function}{a function used for calculation of the bootstrapped
 metrics, can be virtually any user-provided function which takes
 a numeric vector. If NULL, \code{\link{boot_summary}} is used.}
+
+\item{.by}{a character vector of column names which defines blocks
+in block bootstrap. Ignored if \code{NULL}: classical bootstrap.}
+
+\item{.drop}{logical, should empty vector in the block structure be removed?
+Defaults to \code{TRUE}. Ignored if \code{.by} is set to \code{NULL}.}
 }
 \value{
 A list of two elements \code{dataset} and \code{bootstrap} which store the evaluation
@@ -47,4 +65,10 @@ samples of the data set.
 The \code{bmap()} function is a S3 generic.
 It will run in parallel when a parallel backend is registered
 via \code{future::plan()}.
+Specifically for data frames, the user may specify one or more columns
+used to defined blocks used for block bootstrap. In such approach, levels
+of the block structure (e.g. unique participant ID in a repeated measurement
+data set) are sampled instead of observations. This option offers a
+possibility to handle non-independently distributed or auto-correlated
+observations.
 }

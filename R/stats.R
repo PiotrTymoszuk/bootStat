@@ -11,6 +11,12 @@
 #' The `bmap()` function is a S3 generic.
 #' It will run in parallel when a parallel backend is registered
 #' via `future::plan()`.
+#' Specifically for data frames, the user may specify one or more columns
+#' used to defined blocks used for block bootstrap. In such approach, levels
+#' of the block structure (e.g. unique participant ID in a repeated measurement
+#' data set) are sampled instead of observations. This option offers a
+#' possibility to handle non-independently distributed or auto-correlated
+#' observations.
 #'
 #' @return
 #' A list of two elements `dataset` and `bootstrap` which store the evaluation
@@ -27,6 +33,7 @@
 #' metrics, can be virtually any user-provided function which takes
 #' a numeric vector. If NULL, \code{\link{boot_summary}} is used.
 #' @param ... extra arguments provided to the function `FUN`.
+#' @inheritParams sboot
 #'
 #' @export
 
@@ -42,7 +49,7 @@
 
   bmap.default <- function(x, B, FUN,
                            ci_method = c('percentile', 'bca'),
-                           summary_function = NULL,...) {
+                           summary_function = NULL, ...) {
 
     ## entry control ------
 
@@ -58,82 +65,73 @@
 
     ci_method <- match.arg(ci_method[1], c('percentile', 'bca'))
 
-    if(is.null(summary_function)) {
+    if(!is.null(summary_function)) {
 
-      boot_fun <- function(x) boot_summary(x = x, ci_method = ci_method)
+      if(!rlang::is_function(summary_function)) {
 
-    } else {
-
-     boot_fun <- summary_function
-
-    }
-
-    if(!rlang::is_function(boot_fun)) {
-
-      stop("'summary_function' must be a valid R function.",
-           call. = FALSE)
-
-    }
-
-    ## whole dataset estimates and estimates for the bootstraps --------
-
-    dataset_estimate <- FUN(x, ...)
-
-    if(!is.numeric(dataset_estimate)) {
-
-      stop("'FUN' has to return a numeric vector.", call. = FALSE)
-
-    }
-
-    if(is.matrix(dataset_estimate)) {
-
-      stop("'FUN' has to return a numeric vector.", call. = FALSE)
-
-    }
-
-    boot_samples <- sboot(x, B = B)
-
-    boot_estimates <- furrr::future_map(boot_samples, function(x) FUN(x, ...))
-
-    boot_estimates <- try(as.data.frame(do.call('rbind', boot_estimates)))
-
-    if(inherits(boot_estimates, 'try-error')) {
-
-      err_txt <-
-        paste("The user-provided 'FUN' arguments should be a function",
-              'that returns a numeric vector',
-              'which can be coerced to a numeric matrix.')
-
-      stop(err_txt, call. = FALSE)
-
-    }
-
-    ## bootstrapped stats --------
-
-    if(ncol(boot_estimates) > 1) {
-
-      boot_stats <- purrr::map(boot_estimates, boot_fun)
-
-      if(is.null(summary_function)) {
-
-        statistic <- NULL
-
-        boot_stats <-
-          purrr::map2_dfr(boot_stats, names(boot_stats),
-                          ~dplyr::mutate(.x, statistic = .y))
-
-        boot_stats <- dplyr::relocate(boot_stats, statistic)
+        stop("'summary_function' must be a valid R function.",
+             call. = FALSE)
 
       }
 
-    } else {
+    }
 
-      boot_stats <- boot_fun(boot_estimates[[1]])
+    ## resamples and computation of the stats ---------
+
+    boot_samples <- sboot(x, B = B)
+
+    evaluate_stats(x = x,
+                   resamples = boot_samples,
+                   FUN = FUN,
+                   summary_function = summary_function, ...)
+
+  }
+
+#' @rdname bmap
+#' @export bmap.data.frame
+#' @export
+
+  bmap.data.frame <- function(x, B, FUN,
+                              ci_method = c('percentile', 'bca'),
+                              summary_function = NULL, ...,
+                              .by = NULL,
+                              .drop = TRUE) {
+
+    ## entry control ------
+
+    stopifnot(is.numeric(B))
+
+    B <- as.integer(B)
+
+    if(!rlang::is_function(FUN)) {
+
+      stop("'FUN' has to be a valid R function.", call. = FALSE)
 
     }
 
-    c(list(dataset = dataset_estimate),
-      list(bootstrap = boot_stats))
+    ci_method <- match.arg(ci_method[1], c('percentile', 'bca'))
+
+    if(!is.null(summary_function)) {
+
+      if(!rlang::is_function(summary_function)) {
+
+        stop("'summary_function' must be a valid R function.",
+             call. = FALSE)
+
+      }
+
+    }
+
+    ## resamples and computation of the stats ---------
+
+    boot_samples <- sboot(x, B = B, .by = .by, .drop = .drop)
+
+    evaluate_stats(x = x,
+                   resamples = boot_samples,
+                   FUN = FUN,
+                   summary_function = summary_function, ...)
+
+
 
   }
 
