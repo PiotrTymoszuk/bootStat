@@ -51,9 +51,9 @@
     B <- as.integer(B)
 
     vec_samples <-
-      purrr::map(1:B, function(i) sample(x, length(x), replace = TRUE))
+      map(1:B, function(i) sample(x, length(x), replace = TRUE))
 
-    rlang::set_names(vec_samples, paste0('boot_', 1:B))
+    set_names(vec_samples, paste0('boot_', 1:B))
 
   }
 
@@ -75,7 +75,7 @@
 
     index_samples <- sboot(indexes, B = B)
 
-    furrr::future_map(index_samples, ~x[.x, ])
+    future_map(index_samples, ~x[.x, ])
 
   }
 
@@ -101,16 +101,16 @@
 
     }
 
-    sel_frame <- dplyr::select(x, dplyr::all_of(.by))
+    sel_frame <- select(x, all_of(.by))
 
     sel_vec <- interaction(as.list(sel_frame), drop = .drop)
 
     .observation <- NULL
     .id <- NULL
 
-    sel_frame <- dplyr::mutate(sel_frame,
-                               .observation = 1:nrow(sel_frame),
-                               .id = sel_vec)
+    sel_frame <- mutate(sel_frame,
+                        .observation = 1:nrow(sel_frame),
+                        .id = sel_vec)
 
     ## resampling of the unique levels of the block structure -------
 
@@ -120,12 +120,12 @@
     sel_vec <- sboot(as.character(unique(sel_vec)), B = B)
 
     boot_frame <-
-      furrr::future_map(sel_vec,
-                        filter_repeated,
-                        data = sel_frame,
-                        variable = '.id')
+      future_map(sel_vec,
+                 filter_repeated,
+                 data = sel_frame,
+                 variable = '.id')
 
-    purrr::map(boot_frame, ~x[.x$.observation, ])
+    map(boot_frame, ~x[.x$.observation, ])
 
   }
 

@@ -1,26 +1,25 @@
 Package: bootStat
 Type: Package
 Title: Bootstrap Interface for Descriptive Statistics
-Version: 0.1.1
+Version: 1.0.1
 Maintainer: Piotr Tymoszuk <piotr.s.tymoszuk@gmail.com>
 Description: The package provides an easy to use functional interface to 
     compute bootstraped means, standard deviations, quantiles and 
     confidence intervals for virtually any function computing descriptive 
     statistics of a numeric vector or a data frame.
-License: GPL-3
+License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Authors@R: 
     person("Piotr", "Tymoszuk", , "piotr.s.tymoszuk@gmail.com", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-0398-6034"))
 Imports: 
-    coxed,
     dplyr,
     furrr,
     purrr,
     rlang,
     tibble,
 Suggests: 
-    future
-RoxygenNote: 7.2.3
+    future 
+RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)

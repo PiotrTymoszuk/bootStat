@@ -342,4 +342,8 @@ The package maintainer is [Piotr Tymoszuk](mailto:piotr.s.tymoszuk@gmail.com).
 
 ## Acknowledgements
 
-`clustTools` uses tools provided by the [rlang](https://rlang.r-lib.org/), [tidyverse](https://www.tidyverse.org/), [coxed](https://cran.r-project.org/web/packages/coxed/index.html) and [furrr](https://furrr.futureverse.org/). Many thanks to their developers, maintainers and contributors.
+`clustTools` uses tools provided by the [rlang](https://rlang.r-lib.org/), 
+[tidyverse](https://www.tidyverse.org/), 
+[coxed](https://cran.r-project.org/web/packages/coxed/index.html) 
+and [furrr](https://furrr.futureverse.org/). 
+Many thanks to their developers, maintainers and contributors.

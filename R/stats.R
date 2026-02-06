@@ -57,7 +57,7 @@
 
     B <- as.integer(B)
 
-    if(!rlang::is_function(FUN)) {
+    if(!is_function(FUN)) {
 
       stop("'FUN' has to be a valid R function.", call. = FALSE)
 
@@ -67,7 +67,7 @@
 
     if(!is.null(summary_function)) {
 
-      if(!rlang::is_function(summary_function)) {
+      if(!is_function(summary_function)) {
 
         stop("'summary_function' must be a valid R function.",
              call. = FALSE)
@@ -103,7 +103,7 @@
 
     B <- as.integer(B)
 
-    if(!rlang::is_function(FUN)) {
+    if(!is_function(FUN)) {
 
       stop("'FUN' has to be a valid R function.", call. = FALSE)
 
@@ -113,7 +113,7 @@
 
     if(!is.null(summary_function)) {
 
-      if(!rlang::is_function(summary_function)) {
+      if(!is_function(summary_function)) {
 
         stop("'summary_function' must be a valid R function.",
              call. = FALSE)
